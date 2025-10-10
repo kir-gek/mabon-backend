@@ -57,10 +57,10 @@ class UserController {
 
   async updateUserImg(req, res, next) {
     try {
-      const { id } = req.body;
+      const id = req.params.id;
       const { img_url } = req.files;
       let fileName = uuid.v4() + ".jpg";
-      img_url.mv(path.resolve(__dirname, "..", "static", fileName));
+      img_url.mv(path.resolve(__dirname, "..", "static/user", fileName));
 
       await User.update({ img_url: fileName }, { where: { id } });
 
