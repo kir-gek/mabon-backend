@@ -8,6 +8,6 @@ router.post("/addImg/:id", checkRole("ADMIN"), authorController.addImg);
 router.get("/", authorController.getAll);
 router.get("/:id", authorController.getById);
 router.put("/:id",checkRole("ADMIN"), authorController.update);
-router.delete("/:id", checkRole("ADMIN"), authorController.deleteUser);
+router.delete("/:id", checkRole("ADMIN"), authorController.deleteAuthor);
 
 module.exports = router;

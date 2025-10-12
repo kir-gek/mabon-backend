@@ -69,7 +69,7 @@ class AuthorController {
     }
   }
 
-  async delete(req, res, next) {
+  async deleteAuthor(req, res, next) {
     try {
       const { id } = req.params;
       const count = await Author.destroy({ where: { id } });

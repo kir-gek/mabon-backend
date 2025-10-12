@@ -84,9 +84,33 @@ class ProductController {
     }
   }
   async getAll(req, res, next) {
+    let {
+      title,
+      price,
+      stock,
+      limit,
+      page
+    } = req.query;
+    page = page || 1;
+    limit = limit || 10;
+    let offset = page * limit - limit;
     try {
-      // НАДО добавить фильтры, пагинацию, поиск
+      let whereClause = {};
+      if (title) {
+        whereClause.title = title;
+      }
+      if (price){
+        whereClause.price = price;
+      }
+      if (stock) {
+        whereClause.stock = stock;
+      }
+
       const products = await Product.findAll({
+        where: whereClause,
+        limit,
+        offset,
+        order: [["id", "ASC"]],
         include: [
           { model: Author, attributes: ["id", "first_name", "last_name", "img_url"] },
           { model: ArtType, attributes: ["id", "title"] },
