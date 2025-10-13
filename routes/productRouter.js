@@ -11,6 +11,6 @@ router.post("/remove-from-gallery/:id", checkRole("ADMIN"), productController.re
 router.get("/", productController.getAll);
 router.get("/:id", productController.getOne);
 router.put("/:id", checkRole("ADMIN"), productController.update);
-router.delete("/:id", productController.delete);
+router.delete("/:id", productController.delete);   //// надо доделать еще - с  удлаением баги
 
 module.exports = router;

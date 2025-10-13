@@ -31,7 +31,7 @@ const Product = sequelize.define("product", {
   title: { type: DataTypes.STRING },
   description: { type: DataTypes.TEXT, allowNull: true },
   price: { type: DataTypes.INTEGER },
-  img_url: {type: DataTypes.INTEGER},
+  img_url: {type: DataTypes.STRING},
   gallery: {type:DataTypes.JSON, allowNull: true },
   stock: { type: DataTypes.INTEGER, defaultValue: 0, allowNull: false },
 });

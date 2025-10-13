@@ -1,16 +1,18 @@
 const { Product, Author, ArtType } = require("../models/models");
 const ApiError = require("../error/ApiError");
+const uuid = require("uuid");
+const path = require("path");
+const fs = require('fs');
+
 
 class ProductController {
   async create(req, res, next) {
     try {
-      const { title, description, price, img_url, gallery, stock, author_id, type_id } = req.body;
+      const { title, description, price, stock, author_id, type_id } = req.body;
       const product = await Product.create({
         title,
         description,
         price,
-        img_url,
-        gallery,
         stock,
         author_id,
         type_id,
