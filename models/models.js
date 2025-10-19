@@ -55,7 +55,7 @@ const Cart = sequelize.define("cart", {
   quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
 });
 
-const WhishList = sequelize.define("cart", {
+const WhishList = sequelize.define("wish_list", {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 });
 
