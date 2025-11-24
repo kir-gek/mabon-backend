@@ -1,4 +1,4 @@
-const sequelize = require("../db");
+const sequelize = require("../db-local");
 const { DataTypes, Op } = require("sequelize");
 
 const Author = sequelize.define("author", {

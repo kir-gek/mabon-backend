@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
-const sequelize = require("./db");
+//const sequelize = require("./db-local");      //ЧТОБ развернуть локально
+const sequelize = require("./db-deploy");         //ЧТОБ задеплоить на хостинге
 const model = require("./models/models");
 const cors = require(`cors`);
 const fileUpload = require("express-fileupload");
@@ -28,7 +29,7 @@ app.use("/api", router);
 // обработка ошибка (замыкающий мидлвэйр)
 app.use(errorHandler);
 
-// app.get('/test' , (req, res)=> {res.status(200).json({message: 'rrrrr'})})
+app.get('/test' , (req, res)=> {res.status(200).json({message: 'mabon бекенд и БД работает'})})
 
 const start = async () => {
   try {
