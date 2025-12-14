@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
-//const sequelize = require("./db-local");      //ЧТОБ развернуть локально
-const sequelize = require("./db-deploy");         //ЧТОБ задеплоить на хостинге
+const sequelize = require("./db-local");      //ЧТОБ развернуть локально
+//const sequelize = require("./db-deploy");         //ЧТОБ задеплоить на хостинге
 const model = require("./models/models");
 const cors = require(`cors`);
 const fileUpload = require("express-fileupload");
