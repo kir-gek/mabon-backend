@@ -40,8 +40,12 @@ const Order = sequelize.define("order", {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
   status: { type: DataTypes.STRING, allowNull: false, defaultValue: "pending" },
   total_amount: { type: DataTypes.INTEGER, allowNull: false },
-  payment_info: { type: DataTypes.JSON, allowNull: true },
   address: { type: DataTypes.STRING, allowNull: false },
+   // ------------------для юкассы
+  payment_id: { type: DataTypes.STRING, allowNull: true },  // ID платежа от ЮKassa
+  payment_status: { type: DataTypes.STRING, allowNull: true }, // статус (waiting_for_capture, succeeded, canceled)
+  payment_response: { type: DataTypes.JSON, allowNull: true},  // raw ответ от ЮKassa
+  payment_info: { type: DataTypes.JSON, allowNull: true },
 });
 
 const OrderItem = sequelize.define("order_item", {

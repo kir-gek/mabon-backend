@@ -8,6 +8,7 @@ const cartRouter = require("./cartRouter");
 const wishListRouter = require("./wishListRouter");
 const orderRouter = require("./orderRouter");
 const reviewRouter = require("./reviewRouter")
+const yookassaRouter = require("./yookassaRouter")
 
 router.use("/users", userRouter);
 router.use("/author", authorRouter);
@@ -17,5 +18,6 @@ router.use("/cart", cartRouter);
 router.use("/wish-list", wishListRouter);
 router.use("/order", orderRouter);
 router.use("/review", reviewRouter);
+router.use("/yookassa", yookassaRouter);
 
 module.exports = router;

@@ -24,6 +24,9 @@ app.use(express.static(path.resolve(__dirname, 'static')))
 app.use(fileUpload({}));  // дает возможность работать с файлами
 
 app.use("/api", router);
+app.get("/", (req, res) => {
+  res.send("API mabon work");
+});
 
 // обработка ошибка (замыкающий мидлвэйр)
 app.use(errorHandler);
