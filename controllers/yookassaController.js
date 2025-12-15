@@ -1,13 +1,138 @@
 const { Order } = require("../models/models");
 const ApiError = require("../error/ApiError");
-const { randomUUID } = require("crypto"); 
+const { randomUUID } = require("crypto");
 require("dotenv").config();
 const axios = require("axios");
 
 // Куда возвращать юзера после оплаты.
-const RETURN_URL = `http://${process.env.HOST_IP}:${process.env.FRONTEND_PORT}/order-success`;
+// const RETURN_URL = `http://${process.env.HOST_IP}:${process.env.FRONTEND_PORT}/order-success`;
+const RETURN_URL = "192.168.27.196:5173/order-success";
 
 class YookassaController {
+  async testGet(req, res, next) {
+    try {
+      const smth = "rabotaet";
+      return res.json(smth);
+    } catch (e) {
+      next(ApiError.internal(e.message));
+    }
+  }
+
+async createPaymentTest(req, res, next) {
+  try {
+    const { amount, orderId, description, customer } = req.body;
+
+    if (!amount || Number(amount) <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Поле amount обязательно и > 0" });
+    }
+
+    // Проверяем наличие переменных окружения
+    const shopId ='1182411';
+    const secretKey = 'test_pnNMgm3JhjwDHbHz7LN0Wif7mj-VRbqQhxeRAt7786c';
+    
+    if (!shopId || !secretKey) {
+      console.error('Отсутствуют переменные окружения для ЮKassa:', {
+        shopId: !!shopId,
+        secretKey: !!secretKey
+      });
+      return res.status(500).json({
+        message: "Не настроены платежные ключи",
+        error: "Отсутствуют SHOP_ID или SECRET_KEY в переменных окружения"
+      });
+    }
+
+    console.log('YOO_DEBUG: Используем учетные данные:', {
+      shopId: shopId.substring(0, 3) + '...',
+      secretKeyLength: secretKey.length,
+      secretKeyPrefix: secretKey.substring(0, 5) + '...'
+    });
+
+    const idempotenceKey = crypto.randomUUID();
+
+    const payload = {
+      amount: {
+        value: Number(amount).toFixed(2),
+        currency: "RUB",
+      },
+      capture: true,
+      confirmation: {
+        type: "embedded",
+      },
+      description: (description || `Заказ ${orderId || ""}`)
+        .trim()
+        .slice(0, 128),
+      metadata: {
+        orderId: orderId || null,
+        email: customer?.email || null,
+        name: customer?.name || null,
+      },
+    };
+
+    const yooResponse = await axios.post(
+      "https://api.yookassa.ru/v3/payments",
+      payload,
+      {
+        auth: {
+          username: shopId,
+          password: secretKey,
+        },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotence-Key": idempotenceKey,
+        },
+      }
+    );
+
+    const payment = yooResponse.data;
+
+    if (
+      !payment.confirmation ||
+      payment.confirmation.type !== "embedded" ||
+      !payment.confirmation.confirmation_token
+    ) {
+      return res.status(500).json({
+        message: "ЮKassa вернула ответ без confirmation_token",
+        raw: payment,
+      });
+    }
+
+    res.json({
+      paymentId: payment.id,
+      status: payment.status,
+      confirmationToken: payment.confirmation.confirmation_token,
+    });
+  } catch (error) {
+    console.error("YOO_DEBUG_ERROR", {
+      code: error.code,
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+    });
+
+    // Более детальная обработка ошибок
+    let errorMessage = "Не удалось создать платёж в ЮKassa";
+    
+    if (error.response?.status === 401) {
+      errorMessage = "Ошибка авторизации в ЮKassa. Проверьте shopId и secretKey.";
+    } else if (error.response?.status === 400) {
+      errorMessage = "Некорректный запрос к ЮKassa.";
+    } else if (error.code === 'ECONNREFUSED') {
+      errorMessage = "Не удалось подключиться к серверу ЮKassa.";
+    }
+
+    res.status(error.response?.status || 500).json({
+      message: errorMessage,
+      error: {
+        code: error.code,
+        message: error.message,
+        status: error.response?.status || null,
+        data: error.response?.data || null,
+      },
+    });
+  }
+}
   async createPayment(req, res, next) {
     try {
       const { orderId } = req.body;

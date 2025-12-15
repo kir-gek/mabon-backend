@@ -2,8 +2,7 @@ const { Product, Author, ArtType } = require("../models/models");
 const ApiError = require("../error/ApiError");
 const uuid = require("uuid");
 const path = require("path");
-const fs = require('fs');
-
+const fs = require("fs");
 
 class ProductController {
   async create(req, res, next) {
@@ -40,16 +39,20 @@ class ProductController {
   async addToGallery(req, res, next) {
     try {
       const id = req.params.id;
-      const { gallery_images } = req.files; // массив файлов    
+      const { gallery_images } = req.files; // массив файлов
       const product = await Product.findOne({ where: { id } });
       const currentGallery = product.gallery || [];
       const newImages = [];
       // Если один файл - превращаем в массив
-      const files = Array.isArray(gallery_images) ? gallery_images : [gallery_images];
+      const files = Array.isArray(gallery_images)
+        ? gallery_images
+        : [gallery_images];
 
       for (const file of files) {
         const fileName = uuid.v4() + ".jpg";
-        await file.mv(path.resolve(__dirname, "..", "static/product/gallery", fileName));
+        await file.mv(
+          path.resolve(__dirname, "..", "static/product/gallery", fileName)
+        );
         newImages.push(fileName);
       }
       const updatedGallery = [...currentGallery, ...newImages];
@@ -57,7 +60,6 @@ class ProductController {
 
       const updatedProduct = await Product.findOne({ where: { id } });
       return res.json(updatedProduct);
-
     } catch (e) {
       next(ApiError.badRequest(e.message));
     }
@@ -71,28 +73,23 @@ class ProductController {
       const currentGallery = product.gallery || [];
 
       // Фильтруем массив, убирая указанный файл
-      const updatedGallery = currentGallery.filter(file => file !== fileName);
+      const updatedGallery = currentGallery.filter((file) => file !== fileName);
 
       await Product.update({ gallery: updatedGallery }, { where: { id } });
 
       // удалить физический файл с диска
-      fs.unlinkSync(path.resolve(__dirname, "..", "static/product/gallery", fileName));
+      fs.unlinkSync(
+        path.resolve(__dirname, "..", "static/product/gallery", fileName)
+      );
 
       const updatedProduct = await Product.findOne({ where: { id } });
       return res.json(updatedProduct);
-
     } catch (e) {
       next(ApiError.badRequest(e.message));
     }
   }
   async getAll(req, res, next) {
-    let {
-      title,
-      price,
-      stock,
-      limit,
-      page
-    } = req.query;
+    let { title, price, stock, limit, page } = req.query;
     page = page || 1;
     limit = limit || 10;
     let offset = page * limit - limit;
@@ -101,7 +98,7 @@ class ProductController {
       if (title) {
         whereClause.title = title;
       }
-      if (price){
+      if (price) {
         whereClause.price = price;
       }
       if (stock) {
@@ -114,7 +111,10 @@ class ProductController {
         offset,
         order: [["id", "ASC"]],
         include: [
-          { model: Author, attributes: ["id", "first_name", "last_name", "img_url"] },
+          {
+            model: Author,
+            attributes: ["id", "first_name", "last_name", "img_url"],
+          },
           { model: ArtType, attributes: ["id", "title"] },
         ],
       });
@@ -128,7 +128,10 @@ class ProductController {
       const { id } = req.params;
       const product = await Product.findByPk(id, {
         include: [
-          { model: Author, attributes: ["id", "first_name", "last_name", "img_url"] },
+          {
+            model: Author,
+            attributes: ["id", "first_name", "last_name", "img_url"],
+          },
           { model: ArtType, attributes: ["id", "title"] },
         ],
       });
@@ -140,6 +143,28 @@ class ProductController {
       next(ApiError.internal(e.message));
     }
   }
+  async getByAuthorId(req, res, next) {
+    try {
+      const { author_id } = req.params;
+      const products = await Product.findAll({
+        where: { author_id },
+        include: [
+          {
+            model: Author,
+            attributes: ["id", "first_name", "last_name", "img_url"],
+          },
+          { model: ArtType, attributes: ["id", "title"] },
+        ],
+      });
+      if (products.length < 1) {
+        return next(ApiError.notFound("Products not found"));
+      }
+      return res.json(products);
+    } catch (e) {
+      next(ApiError.internal(e.message));
+    }
+  }
+
   async update(req, res, next) {
     try {
       const { id } = req.params;
@@ -166,9 +191,14 @@ class ProductController {
         return next(ApiError.notFound("Product not found"));
       }
 
-      // Удаляем основное изображение 
+      // Удаляем основное изображение
       if (product.img_url) {
-        const mainImagePath = path.resolve(__dirname, "..", "static/product", product.img_url);
+        const mainImagePath = path.resolve(
+          __dirname,
+          "..",
+          "static/product",
+          product.img_url
+        );
         if (fs.existsSync(mainImagePath)) {
           fs.unlinkSync(mainImagePath);
         }
@@ -177,7 +207,12 @@ class ProductController {
       // удвл все файлы из галереи если они есть
       if (product.gallery && Array.isArray(product.gallery)) {
         for (const fileName of product.gallery) {
-          const galleryImagePath = path.resolve(__dirname, "..", "static/product/gallery", fileName);
+          const galleryImagePath = path.resolve(
+            __dirname,
+            "..",
+            "static/product/gallery",
+            fileName
+          );
           if (fs.existsSync(galleryImagePath)) {
             fs.unlinkSync(galleryImagePath);
           }
@@ -187,8 +222,9 @@ class ProductController {
       //  Удаляем запись из бд
       await Product.destroy({ where: { id } });
 
-      return res.json({ message: "Product and all associated images deleted successfully" });
-
+      return res.json({
+        message: "Product and all associated images deleted successfully",
+      });
     } catch (e) {
       next(ApiError.internal(e.message));
     }
